@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: asstra/api:latest
+        image: ghcr.io/do3-2023/do3-2023/ara-kube-api:apiv1.0
         ports:
           - name: tcp
             containerPort: 8080
@@ -44,3 +44,5 @@ spec:
             port: 8080
           initialDelaySeconds: 5
           periodSeconds: 5
+      imagePullSecrets:
+      - name: regcred
