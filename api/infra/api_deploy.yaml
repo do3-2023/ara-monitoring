@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: ghcr.io/do3-2023/do3-2023/ara-kube-api:apiv1.0
+        image: ghcr.io/do3-2023/do3-2023/ara-monitoring-api:apiv1.1
         ports:
           - name: tcp
             containerPort: 8080
