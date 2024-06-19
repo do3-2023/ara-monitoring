@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-script
+  namespace: ara-db
+data:
+  init.sql: |
+    CREATE USER me WITH PASSWORD 'password';
+    CREATE DATABASE me;
+    GRANT ALL PRIVILEGES ON DATABASE me TO me;
