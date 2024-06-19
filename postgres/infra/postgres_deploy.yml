@@ -52,15 +52,14 @@ spec:
               containerPort: 5432
               protocol: TCP
           volumeMounts:
-            - mountPath: /var/lib/postgresql/data
-              name: test-volume
+            - mountPath: "/data"
+              name: db-pv
             - name: init-script
               mountPath: /docker-entrypoint-initdb.d
       volumes:
-      - name: test-volume
-        hostPath:
-          path: /data
-          type: DirectoryOrCreate
+      - name: db-pv
+        persistentVolumeClaim:
+          claimName: db-pv-newclaim
       - name: init-script
         configMap:
           name: init-script
