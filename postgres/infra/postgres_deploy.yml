@@ -54,12 +54,7 @@ spec:
           volumeMounts:
             - mountPath: "/data"
               name: db-pv
-            - name: init-script
-              mountPath: /docker-entrypoint-initdb.d
       volumes:
       - name: db-pv
         persistentVolumeClaim:
           claimName: db-pv-newclaim
-      - name: init-script
-        configMap:
-          name: init-script
