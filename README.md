@@ -1,7 +1,25 @@
-# Kubernetes project : ara-kube
+# Kubernetes project : ara-monitoring
 
+## Prerequisites
+- Kubernetes cluster (k3d/k3s, rke2, ...)
+- A storage class (local-path, longhorn, ...)
+- A secret containing the informations to access to our registry. You can generate one with the command below :
+```bash
+kubectl create secret docker-registry regcred -n ara-back \
+  --docker-server=<registry> \
+  --docker-username=<username> \
+  --docker-password=<password> \
+  --docker-email=<email>
+```
+
+PS : We can also install ArgoCD to manage the deployment of the project more easily like I did. You can find the installation steps [here](https://argoproj.github.io/argo-cd/getting_started/).
 
 ## Global overview
+
+The project is splitted in three main branches :
+- **production** : The branch that is used to deploy the project in a Kubernetes cluster WITHOUT the migration feature
+- **feat/db_migrations** : The branch that is used to deploy the project in a Kubernetes cluster WITH the migration feature
+- **feat/ara-monitoring-wasi** : A POC using Web Assembly to compile and run the API (see the README in the branch)
 
 The project is composed of two main services :
 - **api** : an classic API using Express, a Javascript framework
@@ -16,13 +34,20 @@ The project is composed of two main services :
 - `POSTGRES_HOSTNAME`: Hostname of the machine running postgresql
 - `POSTGRES_DB`: Name of the database to connect to
 
-PS : These variables are present in the [.env.example](.env.example) file.
-
 ### Routes
 
 Here is a list of the accessible routes :
-- **/** : Return 200 - OK
--  **/healthz** : Call the database for date and time
+- **GET /** : Return 200 - OK
+-  **GET /healthz** : Call the database for date and time
+- **GET /users** : Return all users in the database
+- **POST /adduser** : Create a user in the database like this : 
+```json
+{
+    "name": "Adrien",
+    "email": "test@test.com",
+    "number": "1"
+}
+```
 
 ## Database
 
@@ -32,41 +57,14 @@ Here is a list of the accessible routes :
 - `POSTGRES_PASSWORD`: Password of the user created
 - `POSTGRES_DB`: Name of the database created when startup
 
-PS : These variables are present in the [.env.example](.env.example) file and are used by the [docker-compose.prod.yml](docker-compose.prod.yml).
 
-
-## Launch the project locally
-
-The project is ready to use locally, you just need [Docker](https://docs.docker.com/get-docker/) installed !
-Here are the steps :
-
-1. Clone the project
-2. Go to ara-kube folder
-3. Rename `.env.example` file in `.env`
-4. Launch the project using :
-
-```
-docker compose -f docker-compose.prod.yml up
-```
-
-Then you can go to **`http://localhost:8080`** to see the result !
-
-
-## Launching in K3D
+## Launching in a kubernetes cluster
 
 ### Requirements
 
-- [Docker](https://docs.docker.com/get-docker/)
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) (You must follow the steps depending on your OS)
-- [K3D](https://k3d.io/v5.5.1/) or `wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash`
 
 ### Let's gooo !
-#### Create a cluster with the k3d cli
-
-```bash
-k3d cluster create ara -p "8081:80@loadbalancer"
-```
-
 ### Create all namespaces
 
 When cluster creation is done, you can launch these commands to create the namespace for each part of the project : 
@@ -95,14 +93,11 @@ The pods are currently pulling the images from the Docker images registry, so it
 
 ### Result
 
-You just need to go to `http://localhost:8081` and you should see the app up and running.
+You just need to go to `http://<your_public_url_or_ip>` and you should see the app up and running.
 
-
-### Cleanup
- 
- When you are done with this, you can simply delete the cluster :
+PS : If you did not install an ingress controller, you can use port-forward a port of the pod locally like this : 
 ```bash
-k3d cluster rm ara
+kubectl port-forward pod/<pod_name> <local_port>:8080 -n ara-back
 ```
 
 # Author
