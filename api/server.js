@@ -69,8 +69,8 @@ app.get("/users", (req, res) => {
 });
 
 app.post("/adduser", (req, res) => {
-  const { name, email, number } = req.body; // Destructure properties from req.body
-  pool.query('INSERT INTO users (name, email, number) VALUES ($1, $2, $3)', [name, email, number], (err, result) => {
+  const { name, email } = req.body; // Destructure properties from req.body
+  pool.query('INSERT INTO users (name, email) VALUES ($1, $2)', [name, email], (err, result) => {
     if (err) {
       res.status(500).send(err);
     } else {
