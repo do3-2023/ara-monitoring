@@ -13,6 +13,43 @@ spec:
       labels:
         name: api
     spec:
+      initContainers:
+      - name: init-db-flyway
+        image: flyway/flyway
+        args: ['migrate']
+        env:
+        - name: FLYWAY_LOCATIONS
+          value: 'filesystem:/flyway/migrations'
+        - name: driver-class-name
+          value: 'org.postgresql.Driver'
+        - name: POSTGRES_HOST
+          value: "db.ara-db"
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: api
+              key: database
+        - name: FLYWAY_URL
+          value: "postgresql://$(FLYWAY_USER):$(FLYWAY_PASSWORD)@$(POSTGRES_HOST):5432/$(POSTGRES_DB)"
+        - name: FLYWAY_USER
+          valueFrom:
+            secretKeyRef:
+              name: api
+              key: user
+        - name: FLYWAY_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: api
+              key: password
+        - name: FLYWAY_URL
+          value: "db.ara-db"
+        volumeMounts:
+        - name: uptime-flyway-volume
+          mountPath: /flyway/migrations
+      volumes:
+        - name: uptime-flyway-volume
+          configMap:
+             name: flyway-migrations-cm
       containers:
       - name: api
         image: ghcr.io/do3-2023/do3-2023/ara-monitoring-api:apiv1.1

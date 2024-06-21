@@ -1,0 +1,17 @@
+kind: ConfigMap 
+apiVersion: v1 
+metadata:
+  name: flyway-migrations-cm
+  namespace: ara-back
+  labels:
+    name: flyway-migrations-cm
+    app: ara-back
+data:
+  V1__initial_schema.sql: |
+    -- SQL script content for initial schema
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL NOT NULL PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      number TEXT NOT NULL
+    );
