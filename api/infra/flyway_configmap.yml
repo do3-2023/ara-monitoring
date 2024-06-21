@@ -18,3 +18,6 @@ data:
   V2__alter_table.sql: |
     -- SQL script content for altering table
     ALTER TABLE users ALTER COLUMN number DROP NOT NULL;
+  V4__drop_number_column.sql: |
+    -- SQL script content for dropping number column
+    ALTER TABLE users DROP COLUMN number;
