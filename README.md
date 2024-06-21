@@ -14,90 +14,32 @@ kubectl create secret docker-registry regcred -n ara-back \
 
 PS : We can also install ArgoCD to manage the deployment of the project more easily like I did. You can find the installation steps [here](https://argoproj.github.io/argo-cd/getting_started/).
 
-## Global overview
+## WASI API
 
-The project is splitted in three main branches :
-- **production** : The branch that is used to deploy the project in a Kubernetes cluster WITHOUT the migration feature
-- **feat/db_migrations** : The branch that is used to deploy the project in a Kubernetes cluster WITH the migration feature
-- **feat/ara-monitoring-wasi** : A POC using Web Assembly to compile and run the API (see the README in the branch)
+The goal of this part of the project was to reproduce our API in a WebAssembly virtual machine. Because it seems to be a well-suited language for WASM, I chose Rust.
 
-The project is composed of two main services :
-- **api** : an classic API using Express, a Javascript framework
-- **db** : yet another Postgresql database
+After hours of work, the package I was using (actix-web) was not compatible with WASM. I had to find another solution. I found a package called `wasm-bindgen` which allows us to create a WASM module from a Rust project. But the point of this is to create bindings between JS and Rust so that's out of scope.
 
-## API
+My second choice was [Wasix](https://wasix.org/) that supports axum (a web application framework). It's a project that aims to provide a WASI runtime for WebAssembly. I tried to use it but I had some issues with the compilation of the project. Following the tutorial [here](https://wasix.org/docs/language-guide/rust/tutorials/wasix-axum), I was able to compile the project but I had an error when I tried to run it.
 
-### Env
+For documentation pursposes, I used wasmer, a WebAssembly runtime like Wasmtime and Wasmedge.
 
-- `POSTGRES_USER`: Username of the user in the postgresql database
-- `POSTGRES_PASSWORD`: Password of the user in the postgresql database
-- `POSTGRES_HOSTNAME`: Hostname of the machine running postgresql
-- `POSTGRES_DB`: Name of the database to connect to
+## Running it locally
 
-### Routes
+### Prerequisites
+- [Rust](https://www.rust-lang.org/tools/install)
+- [Wasix](https://wasix.org/docs/getting-started/installation)
 
-Here is a list of the accessible routes :
-- **GET /** : Return 200 - OK
--  **GET /healthz** : Call the database for date and time
-- **GET /users** : Return all users in the database
-- **POST /adduser** : Create a user in the database like this : 
-```json
-{
-    "name": "Adrien",
-    "email": "test@test.com",
-    "number": "1"
-}
+### Build the app
+```bash
+cargo wasix build
 ```
 
-## Database
+This command create a .wasm file in the target/wasm32-wasmer-wasi/debug folder.  Using wasmer or the command below, you could potentially run the project, providing you with a Web Assembly micro virtual machine.
 
-### Env
-
-- `POSTGRES_USER`: Username of the user created
-- `POSTGRES_PASSWORD`: Password of the user created
-- `POSTGRES_DB`: Name of the database created when startup
-
-
-## Launching in a kubernetes cluster
-
-### Requirements
-
-- [Kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) (You must follow the steps depending on your OS)
-
-### Let's gooo !
-### Create all namespaces
-
-When cluster creation is done, you can launch these commands to create the namespace for each part of the project : 
+### Run it (WIP)
 ```bash
-kubectl apply -f ./api/infra/api_namespace.yml
-kubectl apply -f ./postgres/infra/postgres_namespace.yml
-```
-
-### Deploy apps
-
-The previous part should not be long enough for you to wait so you can deploy each app with the following : 
-```bash
-kubectl apply -f ./api/infra/
-kubectl apply -f ./postgres/infra/
-```
-These commands apply the **Deploy** files, the **Service** files and any other file that is useful for the project like the **ingress controller** for the webapp or the **secrets** for the api and the db.
-
-PS : You may see that *namespaces are trying to apply again* and you may experiment an error in your console but this is not a problem at all !
-
-#### Check if the pods are ready
-
-The pods are currently pulling the images from the Docker images registry, so it can take some time. You can check the status of the pods with these commands :
-
-- API : `kubectl get pods -n ara-back`
-- Database : `kubectl get pods -n ara-db`
-
-### Result
-
-You just need to go to `http://<your_public_url_or_ip>` and you should see the app up and running.
-
-PS : If you did not install an ingress controller, you can use port-forward a port of the pod locally like this : 
-```bash
-kubectl port-forward pod/<pod_name> <local_port>:8080 -n ara-back
+cargo wasix run
 ```
 
 # Author
