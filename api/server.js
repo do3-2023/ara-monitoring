@@ -59,7 +59,7 @@ app.get("/healthz", (req, res) => {
 });
 
 app.get("/users", (req, res) => {
-  pool.query("SELECT * FROM users", (err, result) => {
+  pool.query("SELECT name,email FROM users", (err, result) => {
     if (err) {
       res.status(500).send(err);
     } else {

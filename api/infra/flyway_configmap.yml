@@ -15,3 +15,6 @@ data:
       email TEXT NOT NULL,
       number TEXT NOT NULL
     );
+  V2__alter_table.sql: |
+    -- SQL script content for altering table
+    ALTER TABLE users ALTER COLUMN number DROP NOT NULL;
