@@ -1,0 +1,27 @@
+spin_manifest_version = 2
+
+[application]
+name = "api-wasi"
+version = "0.1.0"
+authors = ["Adrien Raimbault <adrien.raimbault@etu.umontpellier.fr>"]
+description = ""
+
+[variables]
+db_host = { default = "localhost" }
+db_port = { default = "5432" }
+db_user = { default = "docker" }
+db_password = { default = "docker" }
+db_name = { default = "docker" }
+
+[[trigger.http]]
+route = "/..."
+component = "api-wasi"
+
+[component.api-wasi]
+source = "target/wasm32-wasi/release/api_wasi.wasm"
+allowed_outbound_hosts = ["postgres://{{ db_host }}:{{ db_port }}"]
+[component.api-wasi.variables]
+db_url = "postgres://{{ db_user }}:{{ db_password }}@{{ db_host }}:{{ db_port }}/{{ db_name }}"
+[component.api-wasi.build]
+command = "cargo build --target wasm32-wasi --release"
+watch = ["src/**/*.rs", "Cargo.toml"]
